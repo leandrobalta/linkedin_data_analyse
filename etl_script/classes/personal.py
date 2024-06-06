@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass
-class LinkedInProfile:
+class Profile:
     first_name: str = 'N/A'
     last_name: str = 'N/A'
     full_name: str = 'N/A'
