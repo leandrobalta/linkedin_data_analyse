@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 from datetime import datetime
 from classes.jobClass import JobClass
 from dataclasses import asdict
@@ -28,9 +29,34 @@ job_result_data = []
 
 #     return response.json()
 
+def generateTable(cursor):
+    print("Criando tabela de Job...")
+
+    create_table_query = """
+    CREATE TABLE IF NOT EXISTS job (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        position VARCHAR(255),
+        company VARCHAR(255),
+        company_logo VARCHAR(255),
+        location VARCHAR(255),
+        date DATE,
+        ago_time VARCHAR(255),
+        salary VARCHAR(255),
+        job_url TEXT
+    );
+    """
+
+    cursor.execute(create_table_query)
+
+    print("Tabela criada.")
+
 def getJob(jobData, cursor):
     print("Obtendo Jobs...")
+
+    generateTable(cursor)
+    
     job_result_data = []
+
 
     for job_data in jobData:
         # Convertendo o campo 'date' para datetime
@@ -40,29 +66,31 @@ def getJob(jobData, cursor):
         except ValueError:
             date = None
         
-        auxJob = JobClass(
+        job = JobClass(
             position=job_data.get("position", "N/A"),
             company=job_data.get("company", "N/A"),
             companyLogo=job_data.get("companyLogo", "N/A"),
             location=job_data.get("location", "N/A"),
-            date=date,
+            date=date.strftime("%Y-%m-%d") if date else "N/A",
             agoTime=job_data.get("agoTime", "N/A"),
             salary=job_data.get("salary", "N/A"),
             jobUrl=job_data.get("jobUrl", "N/A")
         )
         # Convert datetime to string for JSON serialization
-        job_dict = asdict(auxJob)
-        job_dict["date"] = auxJob.date.strftime("%Y-%m-%d") if auxJob.date else "N/A"
+        job_dict = asdict(job)
         job_result_data.append(job_dict)
 
-        add_job = ("INSERT INTO job (position, company, companyLogo, location, date, agoTime, salary, jobUrl) "
+        add_job = ("INSERT INTO job (position, company, company_logo, location, date, ago_time, salary, job_url) "
                    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
         
-        job_data_tuple = (job_dict["position"], job_dict["company"], job_dict["companyLogo"], job_dict["location"], job_dict["date"], job_dict["agoTime"], job_dict["salary"], job_dict["jobUrl"])
+        job_data_tuple = (job.position, job.company, job.companyLogo, job.location, job.date, job.agoTime, job.salary, job.jobUrl)
         cursor.execute(add_job, job_data_tuple)
 
 
 
+    current_dir = os.path.dirname(__file__)
+    output_file_path = os.path.join(current_dir, 'results', 'linkedin_job.json')
+    
     with open(output_file_path, 'w') as outfile:
         json.dump(job_result_data, outfile, indent=4)
 
