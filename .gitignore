@@ -178,3 +178,5 @@ pyrightconfig.json
 #local ignores
 csvs/*
 *.csv
+
+sql/*

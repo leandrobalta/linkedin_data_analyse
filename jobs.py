@@ -1,30 +1,32 @@
 import pandas as pd
 import mysql.connector
 
-def main():
-    file_path = "csvs/companies.csv"
-    df_companies = pd.read_csv(file_path, encoding='utf-8')
-    df_jobs= pd.read_csv("csvs/postings.csv", encoding='utf-8')
-    df_companies_database = df_companies.head(1000)
-    df_filtered = df_jobs[df_jobs['company_id'].isin(df_companies_database['company_id'])]
-    # df_final = df_filtered[['job_id', 'company_name', 'title', 'description', 'location', 'company_id', 'med_salary', 'remote_allowed', 'work_type', 'application_url', 'expiry']]
-    df_final = df_filtered.loc[:, ['job_id', 'company_name', 'title', 'description', 'location', 'company_id', 'med_salary', 'remote_allowed', 'work_type', 'application_url', 'expiry']]
+def load_jobs():
+    df_jobs= pd.read_csv("csvs/jobs.csv", encoding='utf-8')
 
-    try:
+    try:    
         cnx = mysql.connector.connect(
-            user="unifei",
-            password="unifei",
-            host="localhost",
-            database="linkedin_data",
-            port=3306,
-        )
-        cursor = cnx.cursor()
+                user="unifei",
+                password="unifei",
+                host="localhost",
+                database="explain_linkedin",
+                port=3306,
+            )
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("SELECT company_id FROM company")
 
-        # Preparando a query de inserção
+        company_id_result = cursor.fetchall()
+            
+        company_id_array = []
+        for company_id in company_id_result:
+            company_id_array.append(company_id['company_id'])
+            
+        df_filtered = df_jobs[df_jobs['company_id'].isin(company_id_array)]
+        df_final = df_filtered.loc[:, ['job_id', 'company_name', 'title', 'description', 'location', 'company_id', 'med_salary', 'remote_allowed', 'work_type', 'application_url', 'expiry']] #O .loc permite selecionar um subconjunto de linhas e colunas pelo rótulo.
+        
         query = ("INSERT INTO job (job_id, company_name, title, description, location, company_id, med_salary, remote_allowed, work_type, application_url, expiry) "
                      "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
       
-        # Iterando sobre cada linha do DataFrame
         helper = 0
         for index, row in df_final.iterrows():
             for i in range(len(row)):
@@ -45,7 +47,7 @@ def main():
 
         cursor.execute("SELECT COUNT(*) FROM job")
         result = cursor.fetchone()
-        print(f"Total de registros na tabela: {result[0]}")
+        print(f"Total de registros na tabela jobs: {result}")
 
     except mysql.connector.Error as err:
         print(f"Erro de conexão MySQL: {err}")
@@ -54,6 +56,3 @@ def main():
             cursor.close()
         if cnx:
             cnx.close()
-
-if __name__ == "__main__":
-    main()
