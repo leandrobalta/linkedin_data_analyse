@@ -1,5 +1,7 @@
-### Simple readme
-the csvs file are ignored by gitignore, so download it
+# Simple README
+
+## Notes
+1. the csvs file are ignored by gitignore, so download it
 
 ## Datasets Links
 1. https://nubela.co/blog/sample-data-for-linkdb/ -> Used 10000 random US profiles
