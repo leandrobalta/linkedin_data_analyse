@@ -11,10 +11,24 @@ import os
 
 # }
 
+
 if __name__ == "__main__":
     # Conectando ao banco de dados
     cnx = mysql.connector.connect(user="unifei", password="unifei", host="25.59.203.106", database="linkedin_data", port = 3306)
-    cursor = "cnx.cursor()"
+    cursor = cnx.cursor()
+
+    if cnx.is_connected():
+        print("Conexão ao MySQL realizada com sucesso.")
+        
+        cursor.execute("select full_name, company_id from profile limit 1;")
+        for row in cursor.fetchall():
+            print(row)
+
+                
+
+
+    else:
+        print("Erro ao conectar ao MySQL.")
 
     current_dir = os.path.dirname(__file__)
 
@@ -22,8 +36,8 @@ if __name__ == "__main__":
         handleOption = input("\n1: Profiles\n2: Company\n3: Job\n4: Save and Exit\n5: Exit\nChoose an option: ")
 
         if handleOption == "1":
-            file_path = os.path.join(current_dir, "jsonData/newProfileData.json")
-            with open(file_path, 'r') as file:
+            file_path = os.path.join(current_dir, "results/new_linkedin_personal.json")
+            with open(file_path, 'r', encoding="utf-8") as file:
                 data = json.load(file)
             getPersonal(data, cursor)
 

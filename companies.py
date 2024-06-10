@@ -9,7 +9,7 @@ def main():
         cnx = mysql.connector.connect(
             user="unifei",
             password="unifei",
-            host="localhost",
+            host="25.59.203.106",
             database="linkedin_data",
             port=3306,
             #charset='utf8mb4'  # Configurando a conexão para usar utf8mb4
